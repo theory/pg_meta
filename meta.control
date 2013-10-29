@@ -1,0 +1,4 @@
+# meta schema extension
+comment = 'edit schema using insert/update/delete statements'
+default_version = '1.0'
+relocatable = true
