@@ -2,16 +2,16 @@
     "name": "meta",
     "abstract": "Schema manipulation via updatable views.",
     "description": "This module leverages the expressiveness of queries to manipulate schema.  The views provided are updatable, and cause the appropriate DDL operation upon insert/update/delete.",
-    "version": "1.0",
+    "version": "0.1",
     "maintainer": "Aquameta <opensource@aquameta.com>",
     "license": {
         "BSD": "http://www.opensource.org/licenses/bsd-license.html"
     },
     "provides": {
         "meta": {
-            "file": "meta--1.0.sql",
+            "file": "meta--0.1.sql",
             "docfile": "README.md",
-            "version": "1.0",
+            "version": "0.1",
             "abstract": "Schema manipulation via updatable views."
         }
     },

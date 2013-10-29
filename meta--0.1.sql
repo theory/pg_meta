@@ -1,4 +1,4 @@
-/* contrib/meta/meta--1.0.sql */
+/* contrib/meta/meta--0.1.sql */
 
 /****************************************************************************************************
  * Schema modification using insert/update/delete                                                   *
