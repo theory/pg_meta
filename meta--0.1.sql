@@ -706,7 +706,7 @@ create view meta.trigger as
 
 create or replace function meta.trigger_insert() returns trigger as $$
     begin
-        execute 'create trigger ' || quote_ident(NEW.name) || ' ' || NEW.when || ' ' || 
+        execute 'create trigger ' || quote_ident(NEW.name) || ' ' || NEW."when" || ' ' ||
                     array_to_string(
                       array[]::text[]
                       || case NEW."insert" when true then 'insert'
@@ -720,22 +720,22 @@ create or replace function meta.trigger_insert() returns trigger as $$
                          end
                       || case NEW."truncate" when true then 'truncate'
                                              else null
-                         end
+                         end,
                     ' or ')
 
                 || ' on ' || (
-                    select quote_ident(schema_name) || '.' || quote_ident(table_name)
+                    select quote_ident(s.name) || '.' || quote_ident(t.name)
                     from meta.table t
                     inner join meta.schema s on
                                s.id = t.schema_id
                     where t.id = NEW.table_id
                 ) || ' for each ' || NEW."level" || ' execute procedure ' || (
-                    select quote_ident(schema_name) || '.' || quote_ident(function_name)
+                    select quote_ident(s.name) || '.' || quote_ident(f.name)
                     from meta.function f
                     inner join meta.schema s on
                                s.id = f.schema_id
                     where f.id = NEW.function_id
-                );
+                ) || '()';
 
         return NEW;
     end;
@@ -744,15 +744,15 @@ language plpgsql;
 
 create or replace function meta.trigger_update() returns trigger as $$
     begin
-        execute 'drop trigger ' || quote_ident(OLD.name) ' on ' || (
-            select quote_ident(schema_name) || '.' || quote_ident(table_name)
+        execute 'drop trigger ' || quote_ident(OLD.name) || ' on ' || (
+            select quote_ident(s.name) || '.' || quote_ident(t.name)
             from meta.table t
             inner join meta.schema s on
                        s.id = t.schema_id
             where t.id = OLD.table_id
         );
 
-        execute 'create trigger ' || quote_ident(NEW.name) || ' ' || NEW.when || ' ' || 
+        execute 'create trigger ' || quote_ident(NEW.name) || ' ' || NEW."when" || ' ' ||
                     array_to_string(
                       array[]::text[]
                       || case NEW."insert" when true then 'insert'
@@ -766,22 +766,22 @@ create or replace function meta.trigger_update() returns trigger as $$
                          end
                       || case NEW."truncate" when true then 'truncate'
                                              else null
-                         end
+                         end,
                     ' or ')
 
                 || ' on ' || (
-                    select quote_ident(schema_name) || '.' || quote_ident(table_name)
+                    select quote_ident(s.name) || '.' || quote_ident(t.name)
                     from meta.table t
                     inner join meta.schema s on
                                s.id = t.schema_id
                     where t.id = NEW.table_id
                 ) || ' for each ' || NEW."level" || ' execute procedure ' || (
-                    select quote_ident(schema_name) || '.' || quote_ident(function_name)
+                    select quote_ident(s.name) || '.' || quote_ident(f.name)
                     from meta.function f
                     inner join meta.schema s on
                                s.id = f.schema_id
                     where f.id = NEW.function_id
-                );
+                ) || '()';
 
         return NEW;
     end;
@@ -790,8 +790,8 @@ language plpgsql;
 
 create or replace function meta.trigger_delete() returns trigger as $$
     begin
-        execute 'drop trigger ' || quote_ident(OLD.name) ' on ' || (
-            select quote_ident(schema_name) || '.' || quote_ident(table_name)
+        execute 'drop trigger ' || quote_ident(OLD.name) || ' on ' || (
+            select quote_ident(s.name) || '.' || quote_ident(t.name)
             from meta.table t
             inner join meta.schema s on
                        s.id = t.schema_id
@@ -803,9 +803,9 @@ create or replace function meta.trigger_delete() returns trigger as $$
 $$
 language plpgsql;
 
-create trigger meta_trigger_insert_trigger instead of insert on meta.function for each row execute procedure meta.trigger_insert();
-create trigger meta_trigger_update_trigger instead of update on meta.function for each row execute procedure meta.trigger_update(); 
-create trigger meta_trigger_delete_trigger instead of delete on meta.function for each row execute procedure meta.trigger_delete();
+create trigger meta_trigger_insert_trigger instead of insert on meta.trigger for each row execute procedure meta.trigger_insert();
+create trigger meta_trigger_update_trigger instead of update on meta.trigger for each row execute procedure meta.trigger_update(); 
+create trigger meta_trigger_delete_trigger instead of delete on meta.trigger for each row execute procedure meta.trigger_delete();
  
 
 
