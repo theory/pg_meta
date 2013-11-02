@@ -135,10 +135,10 @@ create function meta.table_insert() returns trigger as $$
 
     begin
         select * into schema_rec from meta.schema where id = NEW.schema_id;
-        raise notice 'schema_rec: %', schema_rec;
-
         execute 'create table ' || quote_ident(schema_rec.name) || '.' || quote_ident(NEW.name) || ' ()';
-        NEW.id := (select id from meta.table where schema_id = schema_rec.id and name = NEW.name);
+
+        NEW.id := (quote_ident(schema_rec.name) || '.' || quote_ident(NEW.name))::regclass::oid;
+
         return NEW;
     end;
 $$
@@ -209,6 +209,9 @@ create function meta.view_insert() returns trigger as $$
     begin
         select * into schema_rec from meta.schema where id = NEW.schema_id;
         execute 'create view ' || quote_ident(schema_rec.name) || '.' || quote_ident(NEW.name) || ' as ' || NEW.query;
+        
+        NEW.id := (schema_rec.name || '.' || NEW.name)::regclass::oid;
+
         return NEW;
     end;
 $$
