@@ -57,7 +57,7 @@ Unique Constraint
 insert into meta.constraint_unique (schema, "table", name, columns)
 values ('bookstore', 'book', 'unique_name', array['name']);
 
-update meta.constraint_check
+update meta.constraint_unique
 set columns = array['category_id', 'name']
-where schema = 'bookstore' and "table" = 'book' and name = 'min_price';
+where schema = 'bookstore' and "table" = 'book' and name = 'unique_name';
 ```
