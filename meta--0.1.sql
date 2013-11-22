@@ -319,11 +319,15 @@ create function meta.column_update() returns trigger as $$
             end if;
         end if;
 
+        if NEW."type" != OLD."type" and NEW."type" is not null then
+            execute alter_stmt || ' type ' || NEW.type;
+        end if;
+
         if NEW.primary_key != OLD.primary_key then
             if NEW.primary_key then
-                execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' add primary key (' || quote_ident(NEW.name) || ')';
+                execute alter_stmt || ' add primary key (' || quote_ident(NEW.name) || ')';
             else
-                execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' drop constraint ' || quote_ident(OLD.table) || '_pkey';
+                execute alter_stmt || ' drop constraint ' || quote_ident(OLD.table) || '_pkey';
             end if;
         end if;
 
