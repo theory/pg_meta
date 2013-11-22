@@ -10,7 +10,7 @@
 
 
 /****************************************************************************************************
- * SCHEMA meta
+ * SCHEMA meta                                                                                      *
  ****************************************************************************************************/
 
 create schema meta;
@@ -76,7 +76,7 @@ create trigger meta_database_delete_trigger instead of delete on meta.database f
  * VIEW meta.schema                                                                                 *
  ****************************************************************************************************/
 
-create or replace view meta.schema as 
+create view meta.schema as 
     select pg_namespace.nspname AS name
     from pg_namespace;
 
@@ -119,7 +119,7 @@ create type meta.table_id as (
     "table" pg_catalog.name
 );
 
-create or replace view meta.table as
+create view meta.table as
     select ROW(pg_namespace.nspname, pg_class.relname)::meta.table_id as id,
            pg_namespace.nspname as schema,
            pg_class.relname as name
@@ -206,7 +206,7 @@ create function meta.view_update() returns trigger as $$
         end if;
 
         if NEW.query != OLD.query then
-            execute 'create or replace view ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || ' as ' || NEW.query;
+            execute 'create view ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || ' as ' || NEW.query;
         end if;
 
         return NEW;
@@ -291,7 +291,7 @@ create function meta.column_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.column_update() returns trigger as $$
+create function meta.column_update() returns trigger as $$
     declare
         alter_stmt varchar;
 
@@ -350,7 +350,7 @@ create trigger meta_column_delete_trigger instead of delete on meta.column for e
  * VIEW meta.foreign_key                                                                            *
  ****************************************************************************************************/
 
-create or replace view meta.foreign_key as
+create view meta.foreign_key as
     select q.name,
            array_agg((f_pgn.nspname, f_pgc.relname, f_pga.attname)::meta.column_id) as from_column_ids,
            array_agg((t_pgn.nspname, t_pgc.relname, t_pga.attname)::meta.column_id) as to_column_ids,
@@ -401,7 +401,7 @@ create or replace view meta.foreign_key as
 
     group by q.name, q.on_update, q.on_delete;        
 
-create or replace function meta.foreign_key_insert() returns trigger as $$
+create function meta.foreign_key_insert() returns trigger as $$
     declare
         fkey_create_stmt varchar;
 
@@ -448,7 +448,7 @@ create or replace function meta.foreign_key_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.foreign_key_update() returns trigger as $$
+create function meta.foreign_key_update() returns trigger as $$
     declare
         fkey_create_stmt varchar;
 
@@ -501,7 +501,7 @@ create or replace function meta.foreign_key_update() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.foreign_key_delete() returns trigger as $$
+create function meta.foreign_key_delete() returns trigger as $$
     declare
         table_name varchar;
 
@@ -532,7 +532,7 @@ create type meta.function_id as (
     "function" pg_catalog.name
 );
 
-create or replace view meta.function as
+create view meta.function as
     with expanded_args as (
         select pgp.oid as id,
                pgn.nspname as schema,
@@ -608,7 +608,7 @@ create or replace view meta.function as
 
     from no_args noa;
 
-create or replace function meta.function_insert() returns trigger as $$
+create function meta.function_insert() returns trigger as $$
     begin
         execute 'create function ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || '(' ||
             array_to_string(NEW.arguments, ',') ||
@@ -623,9 +623,9 @@ create or replace function meta.function_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.function_update() returns trigger as $$
+create function meta.function_update() returns trigger as $$
     begin
-        execute 'create or replace function ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || '(' ||
+        execute 'create function ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || '(' ||
             array_to_string(NEW.arguments, ',') ||
         ') returns ' || NEW.return_type || '
         as $body$
@@ -638,7 +638,7 @@ create or replace function meta.function_update() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.function_delete() returns trigger as $$
+create function meta.function_delete() returns trigger as $$
     begin
         execute 'drop function ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.name) || '(' ||
             array_to_string(OLD.arguments, ',') ||
@@ -690,7 +690,7 @@ create view meta.trigger as
     inner join pg_namespace t_pgn
             on t_pgn.oid = pgc.relnamespace;
 
-create or replace function meta.trigger_insert() returns trigger as $$
+create function meta.trigger_insert() returns trigger as $$
     begin
         execute 'create trigger ' || quote_ident(NEW.name) || ' ' || NEW."when" || ' ' ||
                     array_to_string(
@@ -719,7 +719,7 @@ create or replace function meta.trigger_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.trigger_update() returns trigger as $$
+create function meta.trigger_update() returns trigger as $$
     begin
         execute 'drop trigger ' || quote_ident(OLD.name) || ' on ' || quote_ident(OLD.t_schema) || '.' || quote_ident(OLD.t_name);
 
@@ -750,7 +750,7 @@ create or replace function meta.trigger_update() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.trigger_delete() returns trigger as $$
+create function meta.trigger_delete() returns trigger as $$
     begin
         execute 'drop trigger ' || quote_ident(OLD.name) || ' on '
                 || ' on ' || quote_ident(NEW.t_schema) || '.' || quote_ident(NEW.t_name);
@@ -770,7 +770,7 @@ create trigger meta_trigger_delete_trigger instead of delete on meta.trigger for
  * VIEW meta.role                                                                                   *
  ****************************************************************************************************/
 
-create or replace view meta.role as
+create view meta.role as
    SELECT 
       pgr.rolname        AS name,
       pgr.rolsuper       AS superuser,
@@ -789,12 +789,12 @@ create or replace view meta.role as
    JOIN pg_authid pga
      ON pgr.oid = pga.oid;
 
-create or replace function meta.role_insert() returns trigger as $$
+create function meta.role_insert() returns trigger as $$
     declare
         base_query varchar;
     begin
-        --raise notice 'role_insert()';
         base_query := 'CREATE ROLE ' || quote_ident(NEW.name);
+
         if (NEW.superuser) then
             base_query := base_query || ' WITH SUPERUSER';
         else
@@ -858,13 +858,8 @@ create function meta.role_update() returns trigger as $$
     declare
         base_query varchar;
     begin
-        --raise notice 'role_update()';
-
         base_query := 'ALTER ROLE ' || quote_ident(OLD.name);
 
-        -- We have to do a little more logic here because the user may not specify
-        -- whether or not someone is a superuser. The same goes for all of these fields.
-        -- Update: Actually postgres autofills in the previous values into the new field.
         if (NEW.superuser) then
             base_query := base_query || ' WITH SUPERUSER';
         else
@@ -917,7 +912,6 @@ create function meta.role_update() returns trigger as $$
             base_query := base_query || ' VALID UNTIL ' || quote_literal(NEW.valid_until);
         end if;
 
-        --RAISE NOTICE 'Query %', base_query;
         execute base_query;
 
         if (NEW.catalog_update != OLD.catalog_update) then
@@ -948,13 +942,23 @@ create trigger meta_role_update_trigger instead of update on meta.role for each 
 create trigger meta_role_delete_trigger instead of delete on meta.role for each row execute procedure meta.role_delete();
 
 
+/****************************************************************************************************
+ * TYPE meta.constraint_id                                                                          *
+ ****************************************************************************************************/
+
+create type meta.constraint_id as (
+    "schema" pg_catalog.name,
+    "table" pg_catalog.name,
+    "constraint" pg_catalog.name
+);
 
 /****************************************************************************************************
  * VIEW meta.constraint_unique                                                                      *
  ****************************************************************************************************/
 
 create view meta.constraint_unique as 
-    select pg_namespace.nspname as schema,
+    select (pg_namespace.nspname, pg_class.relname, pgc.conname)::meta.constraint_id,
+           pg_namespace.nspname as schema,
            pg_class.relname as table,
            pgc.conname as name,
            array_agg(pga.attname) as columns
@@ -973,7 +977,7 @@ create view meta.constraint_unique as
              pgc.conname,
              pg_class.relname;
 
-create or replace function meta.constraint_unique_insert() returns trigger as $$
+create function meta.constraint_unique_insert() returns trigger as $$
     begin
         if NEW.schema is null then
              raise exception 'A schema is required.';
@@ -999,7 +1003,7 @@ create or replace function meta.constraint_unique_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.constraint_unique_update() returns trigger as $$
+create function meta.constraint_unique_update() returns trigger as $$
     begin
         execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' drop constraint ' || OLD.name;
         
@@ -1027,7 +1031,7 @@ create or replace function meta.constraint_unique_update() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.constraint_unique_delete() returns trigger as $$
+create function meta.constraint_unique_delete() returns trigger as $$
     begin
         execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' drop constraint ' || OLD.name;
         return OLD;
@@ -1046,7 +1050,8 @@ create trigger meta_constraint_unique_delete_trigger instead of delete on meta.c
  ****************************************************************************************************/
 
 create view meta.constraint_check as 
-    select pg_namespace.nspname as schema,
+    select (pg_namespace.nspname, pg_class.relname, pgc.conname)::meta.constraint_id,
+           pg_namespace.nspname as schema,
            pg_class.relname as table,
            pgc.conname as name,
            pgc.consrc as check
@@ -1062,7 +1067,7 @@ create view meta.constraint_check as
              pg_class.relname,
              pgc.consrc;
 
-create or replace function meta.constraint_check_insert() returns trigger as $$
+create function meta.constraint_check_insert() returns trigger as $$
     begin
         if NEW.schema is null then
              raise exception 'A schema is required.';
@@ -1088,7 +1093,7 @@ create or replace function meta.constraint_check_insert() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.constraint_check_update() returns trigger as $$
+create function meta.constraint_check_update() returns trigger as $$
     begin
         execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' drop constraint ' || OLD.name;
         
@@ -1117,7 +1122,7 @@ create or replace function meta.constraint_check_update() returns trigger as $$
 $$
 language plpgsql;
 
-create or replace function meta.constraint_check_delete() returns trigger as $$
+create function meta.constraint_check_delete() returns trigger as $$
     begin
         execute 'alter table ' || quote_ident(OLD.schema) || '.' || quote_ident(OLD.table) || ' drop constraint ' || OLD.name;
         return OLD;
