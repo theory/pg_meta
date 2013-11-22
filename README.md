@@ -35,10 +35,10 @@ View
 ----
 ```sql
 insert into meta.view (schema, name, query)
-values ('bookstore', 'inexpensive_books', 'select * from bookstore.book where price < 5;');
+values ('bookstore', 'inexpensive_books', 'select * from bookstore.book where price::decimal < 5;');
 
 update meta.view
-set query = 'select * from bookstore.book where price < 10;'
+set query = 'select * from bookstore.book where price::decimal < 10;'
 where id = ('bookstore', 'inexpensive_books')::meta.view_id;
 ```
 Check Constraint
