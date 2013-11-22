@@ -206,7 +206,7 @@ create function meta.view_update() returns trigger as $$
         end if;
 
         if NEW.query != OLD.query then
-            execute 'create view ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || ' as ' || NEW.query;
+            execute 'create or replace view ' || quote_ident(NEW.schema) || '.' || quote_ident(NEW.name) || ' as ' || NEW.query;
         end if;
 
         return NEW;
