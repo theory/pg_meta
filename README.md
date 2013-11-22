@@ -21,7 +21,7 @@ Column
 ------
 ```sql
 insert into meta.column (schema, "table", name, type, nullable)
-values ('bookstore', 'book', 'price', 'money', false);
+values ('bookstore', 'book', 'price', 'numeric', false);
 
 update meta.column set "default" = 0
 where schema = 'bookstore' and "table" = 'book' and name = 'price';
@@ -35,10 +35,10 @@ View
 ----
 ```sql
 insert into meta.view (schema, name, query)
-values ('bookstore', 'inexpensive_books', 'select * from bookstore.book where price::decimal < 5;');
+values ('bookstore', 'inexpensive_books', 'select * from bookstore.book where price < 5;');
 
 update meta.view
-set query = 'select * from bookstore.book where price::decimal < 10;'
+set query = 'select * from bookstore.book where price < 10;'
 where id = ('bookstore', 'inexpensive_books')::meta.view_id;
 ```
 Check Constraint
