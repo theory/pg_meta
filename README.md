@@ -1,7 +1,7 @@
 Meta: an extension for PostgreSQL
 =================================
 
-This extension turns DDL operations into DML operations. Think of it as a read-write system catalog where schema is manipulated by making changes to the data model directly.
+This extension turns DDL operations into DML operations. Think of it as a read-write system catalog where schema is manipulated by making changes to the data model directly. The following updatable views are provided
 
 Schema
 ------
@@ -40,4 +40,24 @@ values ('bookstore', 'inexpensive_books', 'select * from bookstore.book where pr
 update meta.view
 set query = 'select * from bookstore.book where price < 10;'
 where id = ('bookstore', 'inexpensive_books')::meta.view_id;
+```
+Check Constraint
+----------------
+```sql
+insert into meta.constraint_check (schema, "table", name, "check")
+values ('bookstore', 'book', 'min_price', 'price > 1');
+
+update meta.constraint_check
+set "check" = 'price > 0.50'
+where schema = 'bookstore' and "table" = 'book' and name = 'min_price';
+```
+Unique Constraint
+-----------------
+```sql
+insert into meta.constraint_unique (schema, "table", name, columns)
+values ('bookstore', 'book', 'unique_name', array['name']);
+
+update meta.constraint_check
+set columns = array['category_id', 'name']
+where schema = 'bookstore' and "table" = 'book' and name = 'min_price';
 ```
