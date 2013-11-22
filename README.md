@@ -15,7 +15,7 @@ Table
 ```sql
 insert into meta.table (schema, name) values ('bookstore', 'book');
 update meta.table set name = 'books' where schema = 'bookstore' and name = 'book';
-delete from meta.schema where name = 'books';
+delete from meta.table where name = 'books';
 ```
 Column
 ------
